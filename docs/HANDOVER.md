@@ -1,6 +1,6 @@
-# 交接文档 — Mesa freedreno (KGSL) FCL 插件
+# 交接文档 — Freedreno-EGL（Mesa freedreno + KGSL）
 
-> 状态：**v1.0.2** · Mesa **26.3.0-rc3** · 2026-11-01
+> 状态：**v1.0.3** · Mesa **26.3.0-rc3** · 2026-11-02
 > 面向：接手这个仓库的人 / agent。先读本文件，再看 `README.md` 与 `AGENTS.md`。
 
 > [!WARNING]
@@ -9,7 +9,7 @@
 ## 1. 现在是什么状态
 
 一个给 FCL 用的 **OpenGL 驱动插件**：Mesa 26.3 的 EGL + freedreno gallium 驱动 +
-KGSL 后端，打包成 APK，FCL 里显示为 **KGSL-Freedreno（OpenGL 4.6）**。
+KGSL 后端，打包成 APK，FCL 里显示为 **Freedreno-EGL（OpenGL 4.6）**。
 
 **已在真机验证可用**：原版 Minecraft 26.3、Iris 光影（Chocapic13 V6 Lite）、
 物品图标、区块渲染都正常。核心崩溃（`Failed to wait for frame completion`）已修复。
@@ -20,7 +20,7 @@ KGSL 后端，打包成 APK，FCL 里显示为 **KGSL-Freedreno（OpenGL 4.6）*
 |---|---|
 | 包名 | `pkg.freedreno.kgsl` |
 | 版本 | `1.0.3` / `versionCode 4` |
-| APK | `dist/MesaFreedreno-26.3-main.apk` · sha256 `9ca671483e64679279d4fd1b608b7e93bfea56fdee88689262814cc5db3b7c5d` |
+| APK | `dist/MesaFreedreno-26.3-main.apk` · sha256 `4d10b562979ff0224f21c05315be4e84744eda722e3d66e70dbdd2354ef0a1df` |
 | APK 体积 | ~5.6 MB（零依赖、扁平列表新 UI） |
 | `libgallium_dri.so` | sha256 `3a09a6cd038d891fba9fb066422cbc1e8d0a7f407dbbc32b97a8e0d3f785e217` |
 | `libEGL_mesa_gl.so` | sha256 `64c1f8ab56512475186f4cbc49adaab329f11abe39ad7e569179c776a106226e` |

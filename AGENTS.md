@@ -72,8 +72,8 @@ cd plugin && ./build.sh                         # → dist/MesaFreedreno-26.3-ma
 |---|---|
 | package | `pkg.freedreno.kgsl`（单一包名） |
 | 版本 | 语义化版本，当前 `1.0.3`（`versionCode` 每次递增）；只有一条主线，不要 release/debug/ubwc 变体 |
-| FCL 显示名 | `des` 和 `renderer` 首段都是 `KGSL-Freedreno（OpenGL 4.6）`（全角括号） |
-| 应用名 | `Mesa Freedreno A730 (26.3 UBWC)` |
+| FCL 显示名 | `des` 和 `renderer` 首段都是 `Freedreno-EGL（OpenGL 4.6）`（全角括号） |
+| 应用名 | `Freedreno-EGL` |
 | MC 版本 | 不限：`minMCVer`/`maxMCVer` 留空 |
 | 图标 | 方案 B（芯片 + 穿透箭头），由 `plugin/icon/make-icon.py` 生成，勿手改 PNG |
 

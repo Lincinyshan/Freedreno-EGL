@@ -69,7 +69,7 @@ adb install -r dist/MesaFreedreno-26.3-main.apk
 adb shell am force-stop com.tungsten.fcl        # 必须，见下
 ```
 
-FCL → 版本设置 → 渲染器 → **KGSL-Freedreno（OpenGL 4.6）** → 启动。
+FCL → 版本设置 → 渲染器 → **Freedreno-EGL（OpenGL 4.6）** → 启动。
 
 > **覆盖安装后必须 force-stop FCL**：FCL 把插件的 `nativeLibraryDir` 缓存在进程里，
 > 覆盖安装会换掉 `/data/app/~~<hash>` 目录；不重启会报

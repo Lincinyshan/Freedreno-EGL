@@ -13,7 +13,7 @@
 
     <application
         android:icon="@mipmap/ic_launcher"
-        android:label="Mesa Freedreno A730 (26.3 UBWC)"
+        android:label="Freedreno-EGL"
         android:theme="@android:style/Theme.DeviceDefault.Light.NoActionBar"
         android:hasCode="true"
         android:extractNativeLibs="true"
@@ -24,7 +24,7 @@
         <activity
             android:name="pkg.freedreno.kgsl.MainActivity"
             android:exported="true"
-            android:label="KGSL-Freedreno 设置">
+            android:label="Freedreno-EGL 设置">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -33,8 +33,8 @@
 
         <!-- FCL renderer plugin v1: POJAV_RENDERER=opengles3_desktopgl_* 走 gl_bridge(EGL) 路径 -->
         <meta-data android:name="fclPlugin" android:value="true" />
-        <meta-data android:name="des" android:value="KGSL-Freedreno（OpenGL 4.6）" />
-        <meta-data android:name="renderer" android:value="KGSL-Freedreno（OpenGL 4.6）:libEGL_freedreno.so:libEGL_freedreno.so" />
+        <meta-data android:name="des" android:value="Freedreno-EGL（OpenGL 4.6）" />
+        <meta-data android:name="renderer" android:value="Freedreno-EGL（OpenGL 4.6）:libEGL_freedreno.so:libEGL_freedreno.so" />
         <meta-data android:name="boatEnv" android:value="" />
         <meta-data android:name="pojavEnv" android:value="POJAV_RENDERER=opengles3_desktopgl_freedreno:LIBGL_ES=3:MESA_GL_VERSION_OVERRIDE=4.6:MESA_GLSL_VERSION_OVERRIDE=460:allow_higher_compat_version=true:force_glsl_extensions_warn=true" />
         <meta-data android:name="minMCVer" android:value="" />

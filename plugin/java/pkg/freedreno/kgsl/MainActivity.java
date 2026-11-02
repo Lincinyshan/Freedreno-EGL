@@ -31,7 +31,7 @@ import java.util.Locale;
 import java.util.Map;
 
 /**
- * KGSL-Freedreno（OpenGL 4.6）设置界面。
+ * Freedreno-EGL（OpenGL 4.6）设置界面。
  *
  * 不依赖任何第三方库：纯 android.widget + 系统调色板
  * （API 31+ 用系统动态色，低版本回退固定色）。
@@ -219,7 +219,7 @@ public class MainActivity extends Activity {
             about.setTextSize(14f);
             about.setTextColor(onSurfaceVariant);
             about.setPadding(dp(20), dp(4), dp(20), dp(8));
-            about.setText("KGSL-Freedreno · 1.0.3");
+            about.setText("Freedreno-EGL · 1.0.3");
             content.addView(about);
         }
     }
@@ -359,7 +359,7 @@ public class MainActivity extends Activity {
         File dir = f.getParentFile();
         if (dir != null && !dir.exists()) dir.mkdirs();
         try (FileOutputStream out = new FileOutputStream(f)) {
-            out.write("# KGSL-Freedreno (OpenGL 4.6) settings, written by MainActivity\n".getBytes("UTF-8"));
+            out.write("# Freedreno-EGL (OpenGL 4.6) settings, written by MainActivity\n".getBytes("UTF-8"));
             out.write("# takes effect after force-stopping FCL\n".getBytes("UTF-8"));
             for (Map.Entry<String, String> e : values.entrySet()) {
                 out.write((e.getKey() + "=" + e.getValue() + "\n").getBytes("UTF-8"));

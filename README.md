@@ -1,4 +1,4 @@
-# gpu-driver — Mesa freedreno (KGSL) for FCL
+# Freedreno-EGL — Mesa freedreno (KGSL) for FCL
 
 <img src="plugin/res/mipmap-xxxhdpi/ic_launcher.png" width="96" align="right" alt="icon">
 
@@ -102,7 +102,7 @@ Minecraft 拿到的是一块真正的 4.6 上下文，而不是 GLES 包装或 V
 
 ## 使用
 
-打开 FCL → 版本设置 → 渲染器，选择 **`KGSL-Freedreno（OpenGL 4.6）`**，启动游戏。
+打开 FCL → 版本设置 → 渲染器，选择 **`Freedreno-EGL（OpenGL 4.6）`**，启动游戏。
 
 首次进入游戏后，Minecraft 的调试界面（F3）应该显示：
 
