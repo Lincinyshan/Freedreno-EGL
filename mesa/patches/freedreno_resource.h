@@ -21,6 +21,8 @@
 #include "freedreno_batch.h"
 #include "freedreno_util.h"
 
+#include "fcl_ubwc.h"
+
 BEGINC;
 
 #define PRSC_FMT                                                               \
@@ -414,8 +416,11 @@ fd_batch_write_prep(struct fd_batch *batch, struct fd_resource *rsc) assert_dt
       /* A batch that already went to the kernel can't take new commands; keep
        * the flag set so the batch that does use the resource next clears it.
        */
-      if (batch->flushed)
+      if (batch->flushed) {
+         if (fcl_ubwc_opt(FCL_UBWC_DROP_DEFERRED_CLEAR))
+            rsc->needs_ubwc_clear = false;
          return;
+      }
       batch->ctx->clear_ubwc(batch, rsc);
       rsc->needs_ubwc_clear = false;
    }

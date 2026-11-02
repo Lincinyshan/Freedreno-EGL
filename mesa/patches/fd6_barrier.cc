@@ -10,17 +10,7 @@
 #include "fd6_barrier.h"
 #include "fd6_emit.h"
 
-/* FCL: 实验性“激进”UBWC/CCU 模式（FCL_UBWC_AGGRESSIVE=1）
- * 关闭为 KGSL 补的保守屏障：UCHE invalidate 配对、读前清 flag、同批写后读 flush。
- * 默认关闭；开启后可能重新出现花屏/贴图串图。 */
-static bool
-fcl_ubwc_aggressive(void)
-{
-   static int enabled = -1;
-   if (enabled < 0)
-      enabled = getenv("FCL_UBWC_AGGRESSIVE") != NULL;
-   return enabled != 0;
-}
+#include "fcl_ubwc.h"
 
 template <chip CHIP>
 void
@@ -32,7 +22,7 @@ fd6_emit_flushes(struct fd_context *ctx, fd_cs &cs, unsigned flushes)
     * out.  turnip does the same in tu_flush_for_access() (any _CLEAN also
     * requests ALL_INVALIDATE).
     */
-   if (!fcl_ubwc_aggressive() &&
+   if (!fcl_ubwc_opt(FCL_UBWC_NO_BARRIER) &&
        (flushes & (FD6_FLUSH_CCU_COLOR | FD6_FLUSH_CCU_DEPTH |
                    FD6_INVALIDATE_CCU_COLOR | FD6_INVALIDATE_CCU_DEPTH)) &&
        !(flushes & FD6_INVALIDATE_CACHE))

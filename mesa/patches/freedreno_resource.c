@@ -26,6 +26,8 @@
 #include "freedreno_fence.h"
 #include "freedreno_query_hw.h"
 #include "freedreno_resource.h"
+
+#include "fcl_ubwc.h"
 #include "freedreno_screen.h"
 #include "freedreno_util.h"
 
@@ -213,7 +215,7 @@ realloc_bo(struct fd_resource *rsc, uint32_t size)
     * around the issue, but any memset value seems to.
     */
    if (rsc->layout.ubwc) {
-      rsc->needs_ubwc_clear = true;
+      rsc->needs_ubwc_clear = !fcl_ubwc_opt(FCL_UBWC_TRUST_BO_FLAGS);
    }
 
    util_range_set_empty(&rsc->valid_buffer_range);
@@ -553,6 +555,9 @@ void
 fd_resource_uncompress(struct fd_context *ctx, struct fd_resource *rsc, bool linear)
 {
    tc_assert_driver_thread(ctx->tc);
+
+   if (fcl_ubwc_opt(FCL_UBWC_NO_UNCOMPRESS))
+      return;
 
    uint64_t modifier = linear ? DRM_FORMAT_MOD_LINEAR : DRM_FORMAT_MOD_QCOM_TILED3;
 

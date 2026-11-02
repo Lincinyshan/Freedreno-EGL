@@ -13,23 +13,13 @@
 #include "util/set.h"
 #include "util/u_string.h"
 
+#include "fcl_ubwc.h"
+
 #include "freedreno_batch.h"
 #include "freedreno_context.h"
 #include "freedreno_fence.h"
 #include "freedreno_query_hw.h"
 #include "freedreno_resource.h"
-
-/* FCL: 实验性“激进”UBWC/CCU 模式（FCL_UBWC_AGGRESSIVE=1）
- * 关闭为 KGSL 补的保守屏障：UCHE invalidate 配对、读前清 flag、同批写后读 flush。
- * 默认关闭；开启后可能重新出现花屏/贴图串图。 */
-static bool
-fcl_ubwc_aggressive(void)
-{
-   static int enabled = -1;
-   if (enabled < 0)
-      enabled = getenv("FCL_UBWC_AGGRESSIVE") != NULL;
-   return enabled != 0;
-}
 
 static struct fd_ringbuffer *
 alloc_ring(struct fd_batch *batch, unsigned sz, enum fd_ringbuffer_flags flags)
@@ -542,7 +532,7 @@ fd_batch_resource_write(struct fd_batch *batch, struct fd_resource *rsc)
     * so this has to run before every early-out below (including the
     * cross-context one), not just on the normal path.
     */
-   if (!fcl_ubwc_aggressive())
+   if (!fcl_ubwc_opt(FCL_UBWC_NO_READ_CLEAR))
       fd_batch_write_prep(batch, rsc);
 
    if (track->write_batch == batch)
@@ -639,7 +629,7 @@ fd_batch_resource_read_slowpath(struct fd_batch *batch, struct fd_resource *rsc)
       /* 直接刷：fd_draw_vbo()/fd_clear() 里都有 while (batch->flushed)
        * 循环会重建批次并重跑资源跟踪，所以这里是安全的（与 fd_clear 同模式）。
        * 注：fd_batch_needs_flush() 在 26.3 里没有任何地方读取，别用它。 */
-      if (!fcl_ubwc_aggressive())
+      if (!fcl_ubwc_opt(FCL_UBWC_NO_SAMEBATCH_FLUSH))
          fd_batch_flush(batch);
    }
 

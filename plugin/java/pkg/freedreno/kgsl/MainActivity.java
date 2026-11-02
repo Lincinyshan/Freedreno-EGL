@@ -49,7 +49,8 @@ public class MainActivity extends Activity {
     private int lang;
 
     private boolean flush, notile, noubwc, sysmem, nobin, noFastClear, forceCore, forceCompat;
-    private boolean noShaderCache, noOutFence, importCache, aggressive;
+    private boolean noShaderCache, noOutFence, importCache;
+    private boolean noBarrier, noReadClear, noSameBatchFlush, noUncompress, dropDeferredClear, trustBoFlags;
 
     private int dp(float v) { return (int) (v * getResources().getDisplayMetrics().density + 0.5f); }
 
@@ -192,10 +193,31 @@ public class MainActivity extends Activity {
                     t("FCL_IMPORT_CACHE=1：缓存窗口 dmabuf 的 __DRIimage，省掉每帧 import",
                       "FCL_IMPORT_CACHE=1: cache window dmabuf __DRIimage, skip per-frame import"),
                     importCache, new Setter() { public void set(boolean v) { importCache = v; } });
-            toggle(t("UBWC/CCU 激进模式（实验）", "Aggressive UBWC/CCU (experimental)"),
-                    t("FCL_UBWC_AGGRESSIVE=1：关闭额外 UCHE 屏障 / 读前清 flag / 同批 flush，可能花屏",
-                      "FCL_UBWC_AGGRESSIVE=1: skip extra UCHE barrier / read-clear / same-batch flush (may corrupt)"),
-                    aggressive, new Setter() { public void set(boolean v) { aggressive = v; } });
+            section(t("UBWC 精细调整（实验）", "UBWC tuning (experimental)"));
+            toggle(t("跳过 UCHE 屏障配对", "Skip UCHE barrier pair"),
+                    t("FCL_UBWC_NO_BARRIER=1：CCU clean 后不补 UCHE invalidate / WFI",
+                      "FCL_UBWC_NO_BARRIER=1: no UCHE invalidate/WFI after CCU clean"),
+                    noBarrier, new Setter() { public void set(boolean v) { noBarrier = v; } });
+            toggle(t("跳过读前清 flag", "Skip read-before clear"),
+                    t("FCL_UBWC_NO_READ_CLEAR=1：采样前不检查/清除 UBWC flag",
+                      "FCL_UBWC_NO_READ_CLEAR=1: no flag check before sampling"),
+                    noReadClear, new Setter() { public void set(boolean v) { noReadClear = v; } });
+            toggle(t("跳过同批写后读 flush", "Skip same-batch flush"),
+                    t("FCL_UBWC_NO_SAMEBATCH_FLUSH=1：写后读不再 flush 整批",
+                      "FCL_UBWC_NO_SAMEBATCH_FLUSH=1: keep write+read in one batch"),
+                    noSameBatchFlush, new Setter() { public void set(boolean v) { noSameBatchFlush = v; } });
+            toggle(t("跳过 uncompress（危险）", "Skip uncompress (dangerous)"),
+                    t("FCL_UBWC_NO_UNCOMPRESS=1：格式重解释不做 shadow，几乎必花屏",
+                      "FCL_UBWC_NO_UNCOMPRESS=1: no shadow on reinterpret, likely corrupt"),
+                    noUncompress, new Setter() { public void set(boolean v) { noUncompress = v; } });
+            toggle(t("丢弃延迟 clear", "Drop deferred clear"),
+                    t("FCL_UBWC_DROP_DEFERRED_CLEAR=1：batch 已提交时直接丢掉待清 flag",
+                      "FCL_UBWC_DROP_DEFERRED_CLEAR=1: drop pending flag on flushed batch"),
+                    dropDeferredClear, new Setter() { public void set(boolean v) { dropDeferredClear = v; } });
+            toggle(t("信任 BO 旧 flag", "Trust recycled BO flags"),
+                    t("FCL_UBWC_TRUST_BO_FLAGS=1：BO cache 复用时不清 flag",
+                      "FCL_UBWC_TRUST_BO_FLAGS=1: don't clear flags on BO reuse"),
+                    trustBoFlags, new Setter() { public void set(boolean v) { trustBoFlags = v; } });
             section("GL Profile");
             toggle(t("强制 Core Profile", "Force Core Profile"), t("严格现代 GL；部分光影包会编译失败", "Modern GL only; some packs fail"), forceCore,
                     new Setter() { public void set(boolean v) { forceCore = v; if (v) forceCompat = false; } });
@@ -335,8 +357,18 @@ public class MainActivity extends Activity {
                 noOutFence = !line.endsWith("=0");
             } else if (line.startsWith("FCL_IMPORT_CACHE=")) {
                 importCache = !line.endsWith("=0");
-            } else if (line.startsWith("FCL_UBWC_AGGRESSIVE=")) {
-                aggressive = !line.endsWith("=0");
+            } else if (line.startsWith("FCL_UBWC_NO_BARRIER=")) {
+                noBarrier = !line.endsWith("=0");
+            } else if (line.startsWith("FCL_UBWC_NO_READ_CLEAR=")) {
+                noReadClear = !line.endsWith("=0");
+            } else if (line.startsWith("FCL_UBWC_NO_SAMEBATCH_FLUSH=")) {
+                noSameBatchFlush = !line.endsWith("=0");
+            } else if (line.startsWith("FCL_UBWC_NO_UNCOMPRESS=")) {
+                noUncompress = !line.endsWith("=0");
+            } else if (line.startsWith("FCL_UBWC_DROP_DEFERRED_CLEAR=")) {
+                dropDeferredClear = !line.endsWith("=0");
+            } else if (line.startsWith("FCL_UBWC_TRUST_BO_FLAGS=")) {
+                trustBoFlags = !line.endsWith("=0");
             }
         }
         if (forceCore && forceCompat) { forceCore = false; forceCompat = false; }
@@ -368,7 +400,12 @@ public class MainActivity extends Activity {
         if (noShaderCache) values.put("FCL_NO_SHADER_CACHE", "1");
         if (noOutFence) values.put("FCL_NO_OUT_FENCE", "1");
         if (importCache) values.put("FCL_IMPORT_CACHE", "1");
-        if (aggressive) values.put("FCL_UBWC_AGGRESSIVE", "1");
+        if (noBarrier) values.put("FCL_UBWC_NO_BARRIER", "1");
+        if (noReadClear) values.put("FCL_UBWC_NO_READ_CLEAR", "1");
+        if (noSameBatchFlush) values.put("FCL_UBWC_NO_SAMEBATCH_FLUSH", "1");
+        if (noUncompress) values.put("FCL_UBWC_NO_UNCOMPRESS", "1");
+        if (dropDeferredClear) values.put("FCL_UBWC_DROP_DEFERRED_CLEAR", "1");
+        if (trustBoFlags) values.put("FCL_UBWC_TRUST_BO_FLAGS", "1");
         if (forceCore != forceCompat) {
             values.put(forceCore ? "FCL_GL_FORCE_CORE" : "FCL_GL_FORCE_COMPAT", "1");
         }
@@ -379,7 +416,8 @@ public class MainActivity extends Activity {
 
     private void clearAll() {
         flush = notile = noubwc = sysmem = nobin = noFastClear = forceCore = forceCompat = false;
-        noShaderCache = noOutFence = importCache = aggressive = false;
+        noShaderCache = noOutFence = importCache = false;
+        noBarrier = noReadClear = noSameBatchFlush = noUncompress = dropDeferredClear = trustBoFlags = false;
         write(new LinkedHashMap<String, String>());
         render();
     }

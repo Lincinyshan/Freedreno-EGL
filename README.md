@@ -136,7 +136,12 @@ GL_VERSION:      4.6 (Core Profile) Mesa 26.3.0-rc3
 | 关闭着色器缓存 | `FCL_NO_SHADER_CACHE=1` | 每次启动重新编译 shader（仅用于对照） |
 | 窗口导入缓存（实验） | `FCL_IMPORT_CACHE=1` | 缓存窗口 dmabuf 的 `__DRIimage`，省掉每帧 gralloc 查询 + fd→handle ioctl |
 | 关闭 out-fence | `FCL_NO_OUT_FENCE=1` | swap 不再生成 fence（性能对照用，可能撕裂） |
-| UBWC/CCU 激进模式（实验） | `FCL_UBWC_AGGRESSIVE=1` | 关闭额外 UCHE 屏障、读前清 flag、同批写后读 flush（可能花屏） |
+| 跳过 UCHE 屏障配对 | `FCL_UBWC_NO_BARRIER=1` | CCU clean/invalidate 后不补 UCHE invalidate/WFI |
+| 跳过读前清 flag | `FCL_UBWC_NO_READ_CLEAR=1` | 采样前不检查/清除 UBWC flag |
+| 跳过同批写后读 flush | `FCL_UBWC_NO_SAMEBATCH_FLUSH=1` | 同一 batch 里写后读不再整批 flush |
+| 跳过 uncompress | `FCL_UBWC_NO_UNCOMPRESS=1` | 格式重解释不做 shadow（几乎必花屏） |
+| 丢弃延迟 clear | `FCL_UBWC_DROP_DEFERRED_CLEAR=1` | batch 已提交时直接丢掉待清 flag |
+| 信任 BO 旧 flag | `FCL_UBWC_TRUST_BO_FLAGS=1` | BO cache 复用时不清 flag |
 
 > 着色器磁盘缓存已默认开启：shim 会设置 `MESA_SHADER_CACHE_DIR`
 > （FCL 进程的 cache 目录下 `freedreno_shader_cache`）并强制 `MESA_SHADER_CACHE_DISABLE=false`。

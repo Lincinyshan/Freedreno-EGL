@@ -19,3 +19,4 @@ fd6_barrier.cc       src/gallium/drivers/freedreno/a6xx/fd6_barrier.cc
 fd6_blitter.cc       src/gallium/drivers/freedreno/a6xx/fd6_blitter.cc
 fd6_emit.cc          src/gallium/drivers/freedreno/a6xx/fd6_emit.cc
 fd6_emit.h           src/gallium/drivers/freedreno/a6xx/fd6_emit.h
+fcl_ubwc.h              src/gallium/drivers/freedreno/fcl_ubwc.h
