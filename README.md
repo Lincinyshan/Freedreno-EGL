@@ -136,6 +136,7 @@ GL_VERSION:      4.6 (Core Profile) Mesa 26.3.0-rc3
 | 关闭着色器缓存 | `FCL_NO_SHADER_CACHE=1` | 每次启动重新编译 shader（仅用于对照） |
 | 窗口导入缓存（实验） | `FCL_IMPORT_CACHE=1` | 缓存窗口 dmabuf 的 `__DRIimage`，省掉每帧 gralloc 查询 + fd→handle ioctl |
 | 关闭 out-fence | `FCL_NO_OUT_FENCE=1` | swap 不再生成 fence（性能对照用，可能撕裂） |
+| UBWC/CCU 激进模式（实验） | `FCL_UBWC_AGGRESSIVE=1` | 关闭额外 UCHE 屏障、读前清 flag、同批写后读 flush（可能花屏） |
 
 > 着色器磁盘缓存已默认开启：shim 会设置 `MESA_SHADER_CACHE_DIR`
 > （FCL 进程的 cache 目录下 `freedreno_shader_cache`）并强制 `MESA_SHADER_CACHE_DISABLE=false`。

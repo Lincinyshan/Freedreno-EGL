@@ -20,10 +20,10 @@ KGSL 后端，打包成 APK，FCL 里显示为 **Freedreno-EGL（OpenGL 4.6）**
 |---|---|
 | 包名 | `pkg.freedreno.kgsl` |
 | 版本 | `1.0.3` / `versionCode 4` |
-| APK | `dist/MesaFreedreno-26.3-main.apk` · sha256 `4d10b562979ff0224f21c05315be4e84744eda722e3d66e70dbdd2354ef0a1df` |
+| APK | `dist/MesaFreedreno-26.3-main.apk` · sha256 `579a5e5d418cd59e9c12d5c287d3fd5017479d97ef8bce6396b5ff20a9f75f1f` |
 | APK 体积 | ~5.6 MB（零依赖、扁平列表新 UI） |
-| `libgallium_dri.so` | sha256 `3a09a6cd038d891fba9fb066422cbc1e8d0a7f407dbbc32b97a8e0d3f785e217` |
-| `libEGL_mesa_gl.so` | sha256 `64c1f8ab56512475186f4cbc49adaab329f11abe39ad7e569179c776a106226e` |
+| `libgallium_dri.so` | sha256 `3c28d6aefab8b77ac96aa84f1a7e5a388863bae8790dda07bca2ef85111ab917` |
+| `libEGL_mesa_gl.so` | sha256 `da6caf5208807d7f785523bc56e3d66faef577a4f7157c7ebee27d2a6c73c50c` |
 | 签名证书 SHA-256 | `66ab6f193ed3e6d6637d66e0b004a38505b00056f0b7b127da5f1422563362b8` |
 
 版本规则：**versionCode 每次发布会 +1**，versionName 语义化（1.0.1 → 1.0.2 → 1.0.3 → 1.1 → 2.0），

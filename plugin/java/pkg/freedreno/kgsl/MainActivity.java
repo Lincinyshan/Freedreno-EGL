@@ -49,7 +49,7 @@ public class MainActivity extends Activity {
     private int lang;
 
     private boolean flush, notile, noubwc, sysmem, nobin, noFastClear, forceCore, forceCompat;
-    private boolean noShaderCache, noOutFence, importCache;
+    private boolean noShaderCache, noOutFence, importCache, aggressive;
 
     private int dp(float v) { return (int) (v * getResources().getDisplayMetrics().density + 0.5f); }
 
@@ -192,6 +192,10 @@ public class MainActivity extends Activity {
                     t("FCL_IMPORT_CACHE=1：缓存窗口 dmabuf 的 __DRIimage，省掉每帧 import",
                       "FCL_IMPORT_CACHE=1: cache window dmabuf __DRIimage, skip per-frame import"),
                     importCache, new Setter() { public void set(boolean v) { importCache = v; } });
+            toggle(t("UBWC/CCU 激进模式（实验）", "Aggressive UBWC/CCU (experimental)"),
+                    t("FCL_UBWC_AGGRESSIVE=1：关闭额外 UCHE 屏障 / 读前清 flag / 同批 flush，可能花屏",
+                      "FCL_UBWC_AGGRESSIVE=1: skip extra UCHE barrier / read-clear / same-batch flush (may corrupt)"),
+                    aggressive, new Setter() { public void set(boolean v) { aggressive = v; } });
             section("GL Profile");
             toggle(t("强制 Core Profile", "Force Core Profile"), t("严格现代 GL；部分光影包会编译失败", "Modern GL only; some packs fail"), forceCore,
                     new Setter() { public void set(boolean v) { forceCore = v; if (v) forceCompat = false; } });
@@ -331,6 +335,8 @@ public class MainActivity extends Activity {
                 noOutFence = !line.endsWith("=0");
             } else if (line.startsWith("FCL_IMPORT_CACHE=")) {
                 importCache = !line.endsWith("=0");
+            } else if (line.startsWith("FCL_UBWC_AGGRESSIVE=")) {
+                aggressive = !line.endsWith("=0");
             }
         }
         if (forceCore && forceCompat) { forceCore = false; forceCompat = false; }
@@ -362,6 +368,7 @@ public class MainActivity extends Activity {
         if (noShaderCache) values.put("FCL_NO_SHADER_CACHE", "1");
         if (noOutFence) values.put("FCL_NO_OUT_FENCE", "1");
         if (importCache) values.put("FCL_IMPORT_CACHE", "1");
+        if (aggressive) values.put("FCL_UBWC_AGGRESSIVE", "1");
         if (forceCore != forceCompat) {
             values.put(forceCore ? "FCL_GL_FORCE_CORE" : "FCL_GL_FORCE_COMPAT", "1");
         }
@@ -372,7 +379,7 @@ public class MainActivity extends Activity {
 
     private void clearAll() {
         flush = notile = noubwc = sysmem = nobin = noFastClear = forceCore = forceCompat = false;
-        noShaderCache = noOutFence = importCache = false;
+        noShaderCache = noOutFence = importCache = aggressive = false;
         write(new LinkedHashMap<String, String>());
         render();
     }
