@@ -248,6 +248,93 @@ droid_create_image_from_buffer_info(
       color_info->vertical_siting, 0, &error, priv);
 }
 
+/* FCL: 窗口 buffer 是 2-3 个循环复用的; Mesa 默认每次 dequeue 都重新
+ * import(gralloc 查询 + drmPrimeFDToHandle)。这里按 buffer handle +
+ * 尺寸/格式缓存 __DRIimage，FCL_IMPORT_CACHE=1 开启。 */
+#define FCL_IMG_CACHE_N 8
+struct fcl_img_cache_entry {
+   struct dri2_egl_surface *surf;
+   const void *handle;
+   int width, height, format, stride;
+   struct dri_image *img;
+};
+static struct fcl_img_cache_entry fcl_img_cache[FCL_IMG_CACHE_N];
+static unsigned fcl_img_cache_next;
+
+static bool
+fcl_img_cache_enabled(void)
+{
+   static int enabled = -1;
+   if (enabled < 0)
+      enabled = getenv("FCL_IMPORT_CACHE") != NULL;
+   return enabled;
+}
+
+static void
+fcl_img_cache_destroy(struct dri2_egl_surface *surf, struct dri_image *img)
+{
+   (void)surf;
+   dri2_destroy_image(img);
+}
+
+static struct dri_image *
+fcl_img_cache_lookup(struct dri2_egl_surface *surf,
+                     struct ANativeWindowBuffer *buf)
+{
+   if (!fcl_img_cache_enabled())
+      return NULL;
+
+   for (unsigned i = 0; i < FCL_IMG_CACHE_N; i++) {
+      struct fcl_img_cache_entry *e = &fcl_img_cache[i];
+      if (e->img && e->surf == surf && e->handle == buf->handle &&
+          e->width == buf->width && e->height == buf->height &&
+          e->format == buf->format && e->stride == buf->stride)
+         return e->img;
+   }
+   return NULL;
+}
+
+static void
+fcl_img_cache_store(struct dri2_egl_surface *surf,
+                    struct ANativeWindowBuffer *buf, struct dri_image *img)
+{
+   if (!fcl_img_cache_enabled())
+      return;
+
+   for (unsigned i = 0; i < FCL_IMG_CACHE_N; i++) {
+      struct fcl_img_cache_entry *e = &fcl_img_cache[i];
+      if (e->img && e->surf == surf && e->handle == buf->handle) {
+         fcl_img_cache_destroy(surf, e->img);
+         e->img = NULL;
+      }
+   }
+
+   struct fcl_img_cache_entry *e =
+      &fcl_img_cache[fcl_img_cache_next++ % FCL_IMG_CACHE_N];
+   if (e->img)
+      fcl_img_cache_destroy(e->surf, e->img);
+   e->surf = surf;
+   e->handle = buf->handle;
+   e->width = buf->width;
+   e->height = buf->height;
+   e->format = buf->format;
+   e->stride = buf->stride;
+   e->img = img;
+}
+
+static void
+fcl_img_cache_flush(struct dri2_egl_surface *surf)
+{
+   for (unsigned i = 0; i < FCL_IMG_CACHE_N; i++) {
+      struct fcl_img_cache_entry *e = &fcl_img_cache[i];
+      if (e->img && e->surf == surf) {
+         fcl_img_cache_destroy(surf, e->img);
+         e->img = NULL;
+         e->surf = NULL;
+      }
+   }
+}
+
 static struct dri_image *
 droid_create_image_from_native_buffer(_EGLDisplay *disp,
                                       struct ANativeWindowBuffer *buf,
@@ -383,7 +470,8 @@ droid_window_enqueue_buffer(_EGLDisplay *disp,
    dri2_surf->back = NULL;
 
    if (dri2_surf->dri_image_back) {
-      dri2_destroy_image(dri2_surf->dri_image_back);
+      if (!fcl_img_cache_enabled())
+         dri2_destroy_image(dri2_surf->dri_image_back);
       dri2_surf->dri_image_back = NULL;
    }
 
@@ -619,6 +707,8 @@ droid_destroy_surface(_EGLDisplay *disp, _EGLSurface *surf)
       dri2_surf->dri_image_front = NULL;
    }
 
+   fcl_img_cache_flush(dri2_surf);
+
    driDestroyDrawable(dri2_surf->dri_drawable);
 
    close_in_fence_fd(dri2_surf);
@@ -714,7 +804,14 @@ get_back_bo(struct dri2_egl_surface *dri2_surf)
       }
 
       dri2_surf->dri_image_back =
-         droid_create_image_from_native_buffer(disp, dri2_surf->buffer, NULL);
+         fcl_img_cache_lookup(dri2_surf, dri2_surf->buffer);
+      if (!dri2_surf->dri_image_back) {
+         dri2_surf->dri_image_back =
+            droid_create_image_from_native_buffer(disp, dri2_surf->buffer, NULL);
+         if (dri2_surf->dri_image_back)
+            fcl_img_cache_store(dri2_surf, dri2_surf->buffer,
+                                dri2_surf->dri_image_back);
+      }
       if (!dri2_surf->dri_image_back) {
          _eglLog(_EGL_WARNING, "failed to create DRI image from FD");
          return -1;
