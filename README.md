@@ -133,6 +133,7 @@ GL_VERSION:      4.6 (Core Profile) Mesa 26.3.0-rc3
 | `FCL_NO_FAST_CLEAR` | `FCL_NO_FAST_CLEAR=1` | 关闭 a7xx GMEM fast clear |
 | 强制 Core Profile | `FCL_GL_FORCE_CORE=1` | 强制 4.6 Core |
 | 强制 Compatibility | `FCL_GL_FORCE_COMPAT=1` | 强制 4.6 Compatibility |
+| 关闭着色器缓存 | `FCL_NO_SHADER_CACHE=1` | 每次启动重新编译 shader（仅用于对照） |
 | 窗口导入缓存（实验） | `FCL_IMPORT_CACHE=1` | 缓存窗口 dmabuf 的 `__DRIimage`，省掉每帧 gralloc 查询 + fd→handle ioctl |
 | 关闭 out-fence | `FCL_NO_OUT_FENCE=1` | swap 不再生成 fence（性能对照用，可能撕裂） |
 

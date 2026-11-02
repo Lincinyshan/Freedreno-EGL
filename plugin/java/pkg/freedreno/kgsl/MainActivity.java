@@ -49,6 +49,7 @@ public class MainActivity extends Activity {
     private int lang;
 
     private boolean flush, notile, noubwc, sysmem, nobin, noFastClear, forceCore, forceCompat;
+    private boolean noShaderCache, noOutFence;
 
     private int dp(float v) { return (int) (v * getResources().getDisplayMetrics().density + 0.5f); }
 
@@ -179,6 +180,14 @@ public class MainActivity extends Activity {
             section(t("其他", "Other"));
             toggle("FCL_NO_FAST_CLEAR", t("关闭 a7xx GMEM fast clear", "Disable a7xx GMEM fast clear"), noFastClear,
                     new Setter() { public void set(boolean v) { noFastClear = v; } });
+            toggle(t("关闭着色器缓存", "Disable shader cache"),
+                    t("FCL_NO_SHADER_CACHE=1：每次启动重新编译 shader（仅用于对照）",
+                      "FCL_NO_SHADER_CACHE=1: recompile shaders every launch (for A/B only)"),
+                    noShaderCache, new Setter() { public void set(boolean v) { noShaderCache = v; } });
+            toggle(t("关闭 out-fence", "Disable out-fence"),
+                    t("FCL_NO_OUT_FENCE=1：swap 不带 fence（可能撕裂，仅用于性能对照）",
+                      "FCL_NO_OUT_FENCE=1: swap without fence (may tear, perf A/B only)"),
+                    noOutFence, new Setter() { public void set(boolean v) { noOutFence = v; } });
             section("GL Profile");
             toggle(t("强制 Core Profile", "Force Core Profile"), t("严格现代 GL；部分光影包会编译失败", "Modern GL only; some packs fail"), forceCore,
                     new Setter() { public void set(boolean v) { forceCore = v; if (v) forceCompat = false; } });
@@ -312,6 +321,10 @@ public class MainActivity extends Activity {
                 forceCore = true;
             } else if (line.startsWith("FCL_GL_FORCE_COMPAT=")) {
                 forceCompat = true;
+            } else if (line.startsWith("FCL_NO_SHADER_CACHE=")) {
+                noShaderCache = !line.endsWith("=0");
+            } else if (line.startsWith("FCL_NO_OUT_FENCE=")) {
+                noOutFence = !line.endsWith("=0");
             }
         }
         if (forceCore && forceCompat) { forceCore = false; forceCompat = false; }
@@ -340,6 +353,8 @@ public class MainActivity extends Activity {
         if (nobin) dbg.add("nobin");
         if (!dbg.isEmpty()) values.put("FD_MESA_DEBUG", String.join(",", dbg));
         if (noFastClear) values.put("FCL_NO_FAST_CLEAR", "1");
+        if (noShaderCache) values.put("FCL_NO_SHADER_CACHE", "1");
+        if (noOutFence) values.put("FCL_NO_OUT_FENCE", "1");
         if (forceCore != forceCompat) {
             values.put(forceCore ? "FCL_GL_FORCE_CORE" : "FCL_GL_FORCE_COMPAT", "1");
         }
@@ -350,6 +365,7 @@ public class MainActivity extends Activity {
 
     private void clearAll() {
         flush = notile = noubwc = sysmem = nobin = noFastClear = forceCore = forceCompat = false;
+        noShaderCache = noOutFence = false;
         write(new LinkedHashMap<String, String>());
         render();
     }
