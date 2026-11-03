@@ -135,6 +135,48 @@ fcl_config_has(const char *key)
    return 0;
 }
 
+static int
+fcl_cache_base(char *out, size_t n)
+{
+   const char *tmp = getenv("TMPDIR");
+
+   if (tmp && tmp[0]) {
+      snprintf(out, n, "%s", tmp);
+      return 1;
+   }
+
+   char cmd[256] = { 0 };
+   FILE *f = fopen("/proc/self/cmdline", "rb");
+   if (f) {
+      size_t got = fread(cmd, 1, sizeof(cmd) - 1, f);
+      (void)got;
+      fclose(f);
+   }
+   char *colon = strchr(cmd, ':');
+   if (colon)
+      *colon = '\0';
+   if (!cmd[0])
+      return 0;
+   snprintf(out, n, "/data/user/0/%s/cache", cmd);
+   return 1;
+}
+
+/* FCL_MESA_LOG=1：把 Mesa/驱动写到 stderr 的日志（FD_MESA_DEBUG=perf 等）
+ * 落到 $TMPDIR/freedreno_mesa.log，否则 Android 上这些输出会被丢掉。 */
+static void
+fcl_setup_log_file(void)
+{
+   char base[PATH_MAX], path[PATH_MAX];
+
+   if (!fcl_config_has("FCL_MESA_LOG"))
+      return;
+   if (!fcl_cache_base(base, sizeof(base)))
+      return;
+   snprintf(path, sizeof(path), "%s/freedreno_mesa.log", base);
+   if (freopen(path, "a", stderr))
+      fprintf(stderr, "[fcl-egl] mesa log -> %s\n", path);
+}
+
 static void
 fcl_setup_shader_cache(void)
 {
@@ -176,6 +218,7 @@ fcl_setup_shader_cache(void)
 __attribute__((constructor)) static void
 fcl_shim_ctor(void)
 {
+   fcl_setup_log_file();
    fcl_setup_shader_cache();
    self_dir();
    fprintf(stderr, "[fcl-egl] shim loaded (ctor) dir=%s\n", g_dir);

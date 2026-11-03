@@ -131,6 +131,7 @@ GL_VERSION:      4.6 (Core Profile) Mesa 26.3.0-rc3
 | `sysmem` | `FD_MESA_DEBUG=sysmem` | 绕过 GMEM，全部渲染到系统内存（很慢，用于排除片上内存问题） |
 | `nobin` | `FD_MESA_DEBUG=nobin` | 禁用硬件 binning |
 | `perf` | `FD_MESA_DEBUG=perf` | 打印性能警告（flush、LRZ 失效原因） |
+| Mesa 日志文件 | `FCL_MESA_LOG=1` | 驱动 stderr 写到 `cache/freedreno_mesa.log`（Android 默认会丢弃） |
 | `FCL_NO_FAST_CLEAR` | `FCL_NO_FAST_CLEAR=1` | 关闭 a7xx GMEM fast clear |
 | 强制 Core Profile | `FCL_GL_FORCE_CORE=1` | 强制 4.6 Core |
 | 强制 Compatibility | `FCL_GL_FORCE_COMPAT=1` | 强制 4.6 Compatibility |
