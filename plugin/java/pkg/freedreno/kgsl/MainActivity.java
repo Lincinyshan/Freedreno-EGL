@@ -48,7 +48,7 @@ public class MainActivity extends Activity {
     private boolean settingsPage;
     private int lang;
 
-    private boolean flush, notile, noubwc, sysmem, nobin, noFastClear, forceCore, forceCompat;
+    private boolean flush, notile, noubwc, sysmem, nobin, perf, noFastClear, forceCore, forceCompat;
     private boolean noShaderCache, noOutFence, importCache, glthread;
     private boolean noBarrier, noReadClear, noSameBatchFlush, noUncompress, dropDeferredClear, trustBoFlags;
 
@@ -178,6 +178,9 @@ public class MainActivity extends Activity {
                     new Setter() { public void set(boolean v) { sysmem = v; } });
             toggle("nobin", t("禁用硬件 binning", "Disable hardware binning"), nobin,
                     new Setter() { public void set(boolean v) { nobin = v; } });
+            toggle("perf", t("输出性能警告（flush / LRZ 原因；FD_MESA_DEBUG=perf）",
+                             "Perf warnings (flush/LRZ reasons; FD_MESA_DEBUG=perf)"),
+                    perf, new Setter() { public void set(boolean v) { perf = v; } });
             section(t("其他", "Other"));
             toggle("FCL_NO_FAST_CLEAR", t("关闭 a7xx GMEM fast clear", "Disable a7xx GMEM fast clear"), noFastClear,
                     new Setter() { public void set(boolean v) { noFastClear = v; } });
@@ -349,6 +352,7 @@ public class MainActivity extends Activity {
                 noubwc = v.contains("noubwc");
                 sysmem = v.contains("sysmem");
                 nobin = v.contains("nobin");
+                perf = v.contains("perf");
             } else if (line.startsWith("FCL_NO_FAST_CLEAR=")) {
                 noFastClear = true;
             } else if (line.startsWith("FCL_GL_FORCE_CORE=")) {
@@ -401,6 +405,7 @@ public class MainActivity extends Activity {
         if (noubwc) dbg.add("noubwc");
         if (sysmem) dbg.add("sysmem");
         if (nobin) dbg.add("nobin");
+        if (perf) dbg.add("perf");
         if (!dbg.isEmpty()) values.put("FD_MESA_DEBUG", String.join(",", dbg));
         if (noFastClear) values.put("FCL_NO_FAST_CLEAR", "1");
         if (noShaderCache) values.put("FCL_NO_SHADER_CACHE", "1");
@@ -422,7 +427,7 @@ public class MainActivity extends Activity {
     }
 
     private void clearAll() {
-        flush = notile = noubwc = sysmem = nobin = noFastClear = forceCore = forceCompat = false;
+        flush = notile = noubwc = sysmem = nobin = perf = noFastClear = forceCore = forceCompat = false;
         noShaderCache = noOutFence = importCache = glthread = false;
         noBarrier = noReadClear = noSameBatchFlush = noUncompress = dropDeferredClear = trustBoFlags = false;
         write(new LinkedHashMap<String, String>());
