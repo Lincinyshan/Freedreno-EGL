@@ -134,6 +134,7 @@ GL_VERSION:      4.6 (Core Profile) Mesa 26.3.0-rc3
 | 强制 Core Profile | `FCL_GL_FORCE_CORE=1` | 强制 4.6 Core |
 | 强制 Compatibility | `FCL_GL_FORCE_COMPAT=1` | 强制 4.6 Compatibility |
 | 关闭着色器缓存 | `FCL_NO_SHADER_CACHE=1` | 每次启动重新编译 shader（仅用于对照） |
+| 线程化 GL | `mesa_glthread=true` | Mesa 把 GL 调用攒批到独立线程（实验，可能不兼容） |
 | 窗口导入缓存（实验） | `FCL_IMPORT_CACHE=1` | 缓存窗口 dmabuf 的 `__DRIimage`，省掉每帧 gralloc 查询 + fd→handle ioctl |
 | 关闭 out-fence | `FCL_NO_OUT_FENCE=1` | swap 不再生成 fence（性能对照用，可能撕裂） |
 | 跳过 UCHE 屏障配对 | `FCL_UBWC_NO_BARRIER=1` | CCU clean/invalidate 后不补 UCHE invalidate/WFI |

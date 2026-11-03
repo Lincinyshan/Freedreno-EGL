@@ -49,7 +49,7 @@ public class MainActivity extends Activity {
     private int lang;
 
     private boolean flush, notile, noubwc, sysmem, nobin, noFastClear, forceCore, forceCompat;
-    private boolean noShaderCache, noOutFence, importCache;
+    private boolean noShaderCache, noOutFence, importCache, glthread;
     private boolean noBarrier, noReadClear, noSameBatchFlush, noUncompress, dropDeferredClear, trustBoFlags;
 
     private int dp(float v) { return (int) (v * getResources().getDisplayMetrics().density + 0.5f); }
@@ -193,6 +193,10 @@ public class MainActivity extends Activity {
                     t("FCL_IMPORT_CACHE=1：缓存窗口 dmabuf 的 __DRIimage，省掉每帧 import",
                       "FCL_IMPORT_CACHE=1: cache window dmabuf __DRIimage, skip per-frame import"),
                     importCache, new Setter() { public void set(boolean v) { importCache = v; } });
+            toggle(t("线程化 GL（glthread）", "Threaded GL (glthread)"),
+                    t("mesa_glthread=true：GL 调用攒批到独立线程（需重启，可能不兼容）",
+                      "mesa_glthread=true: batch GL calls on a worker thread (restart; may break)"),
+                    glthread, new Setter() { public void set(boolean v) { glthread = v; } });
             section(t("UBWC 精细调整（实验）", "UBWC tuning (experimental)"));
             toggle(t("跳过 UCHE 屏障配对", "Skip UCHE barrier pair"),
                     t("FCL_UBWC_NO_BARRIER=1：CCU clean 后不补 UCHE invalidate / WFI",
@@ -357,6 +361,8 @@ public class MainActivity extends Activity {
                 noOutFence = !line.endsWith("=0");
             } else if (line.startsWith("FCL_IMPORT_CACHE=")) {
                 importCache = !line.endsWith("=0");
+            } else if (line.startsWith("mesa_glthread=")) {
+                glthread = !line.endsWith("=0");
             } else if (line.startsWith("FCL_UBWC_NO_BARRIER=")) {
                 noBarrier = !line.endsWith("=0");
             } else if (line.startsWith("FCL_UBWC_NO_READ_CLEAR=")) {
@@ -400,6 +406,7 @@ public class MainActivity extends Activity {
         if (noShaderCache) values.put("FCL_NO_SHADER_CACHE", "1");
         if (noOutFence) values.put("FCL_NO_OUT_FENCE", "1");
         if (importCache) values.put("FCL_IMPORT_CACHE", "1");
+        if (glthread) values.put("mesa_glthread", "true");
         if (noBarrier) values.put("FCL_UBWC_NO_BARRIER", "1");
         if (noReadClear) values.put("FCL_UBWC_NO_READ_CLEAR", "1");
         if (noSameBatchFlush) values.put("FCL_UBWC_NO_SAMEBATCH_FLUSH", "1");
@@ -416,7 +423,7 @@ public class MainActivity extends Activity {
 
     private void clearAll() {
         flush = notile = noubwc = sysmem = nobin = noFastClear = forceCore = forceCompat = false;
-        noShaderCache = noOutFence = importCache = false;
+        noShaderCache = noOutFence = importCache = glthread = false;
         noBarrier = noReadClear = noSameBatchFlush = noUncompress = dropDeferredClear = trustBoFlags = false;
         write(new LinkedHashMap<String, String>());
         render();
